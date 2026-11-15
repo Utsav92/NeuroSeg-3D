@@ -1,0 +1,13 @@
+# Apple Silicon (24 GB unified memory) starting point. Verify with scripts/benchmark_device.py - these are not guaranteed limits.
+data: {patch_size: [64, 64, 64]}
+model: {base_channels: 16}
+train:
+  device: auto            # picks MPS only if a real 3D forward+backward probe passes, else CPU
+  batch_size: 1
+  grad_accum: 4
+  grad_clip: 1.0
+  num_workers: 2
+  gradient_checkpointing: false   # measured (scripts/benchmark_device.py): no memory saving at 64^3/base16 on MPS (~1.2 GB either way), ~6% slower; set true for larger models
+  amp: false              # fp16 autocast is not enabled on MPS (stability)
+  sw_batch_size: 1
+  tensorboard: true

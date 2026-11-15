@@ -1,0 +1,3 @@
+# Apple Silicon: the default PyTorch wheel from PyPI includes MPS support.
+-r requirements.txt
+torch>=2.3

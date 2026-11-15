@@ -1,0 +1,16 @@
+# Local-only research stack. Ports are bound to 127.0.0.1 on the host; there is NO authentication.
+# Do not expose publicly without the controls listed in docs/DEPLOYMENT.md.
+services:
+  api:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["./outputs/checkpoints/resunet3d_msd:/models:ro"]
+    environment: {NEUROSEG_DEVICE: cpu, NEUROSEG_CHECKPOINT: /models/best.pt}
+    read_only: true
+    tmpfs: ["/work", "/tmp"]
+  studio:
+    build: .
+    command: ["streamlit", "run", "app/streamlit_app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.maxUploadSize", "800"]
+    ports: ["127.0.0.1:8501:8501"]
+    volumes: ["./outputs/checkpoints/resunet3d_msd:/models:ro"]
+    environment: {NEUROSEG_DEVICE: cpu, NEUROSEG_CHECKPOINT: /models/best.pt}

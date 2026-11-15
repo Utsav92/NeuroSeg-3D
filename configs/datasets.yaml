@@ -1,0 +1,66 @@
+# Dataset registry. Nothing here is assumed: scripts/verify_dataset.py checks dataset.json against these entries.
+default_dataset: msd_brain
+
+preprocess:                      # applied identically to every dataset; per-volume only (no dataset-level stats)
+  clip_percentiles: [0.5, 99.5]
+  crop_margin: 2
+  target_spacing: null           # null = keep native spacing (MSD brain is already 1 mm isotropic; verified by inspect_dataset.py)
+
+split:
+  fractions: [0.7, 0.15, 0.15]   # train / validation / test, by patient
+  seed: 42
+
+datasets:
+  msd_brain:
+    adapter: msd_brain
+    description: Medical Segmentation Decathlon Task01_BrainTumour (BraTS 2016/2017-derived, 484 labelled training cases)
+    root: data/raw/Task01_BrainTumour
+    download:
+      urls:                      # official AWS Open Data Registry buckets (registry.opendata.aws/msd)
+        - https://msd-for-monai.s3-us-west-2.amazonaws.com/Task01_BrainTumour.tar        # s3://msd-for-monai (us-west-2)
+        - https://msd-for-monai-eu.s3-eu-west-2.amazonaws.com/Task01_BrainTumour.tar     # s3://msd-for-monai-eu (mirror)
+      archive: data/raw/_downloads/Task01_BrainTumour.tar
+      expected_size_bytes: 7608266240   # Content-Length observed 2026-11-15
+      s3_etag_observed: '"dfd1b5a5df62dadb48cad3d347148c70-907"'   # multipart ETag (not an MD5 of the file)
+      last_modified_observed: "Fri, 14 Aug 2020 09:11:05 GMT"
+    license:
+      name: CC-BY-SA 4.0
+      note: AWS registry lists "CC-BY-SA 4.0" but links the CC-BY page; dataset.json carries its own licence string, recorded by verify_dataset.py
+      attribution: "Simpson et al., A large annotated medical image dataset for the development and evaluation of segmentation algorithms, arXiv:1902.09063"
+      redistribution: Do not redistribute the data from this repository; users download it themselves and must preserve attribution and share-alike terms.
+    processed_dir: data/processed/msd_brain
+    splits_dir: data/splits
+    expected:
+      n_training: 484
+      modalities: [flair, t1, t1ce, t2]   # canonical names derived from dataset.json (FLAIR, T1w, t1gd, T2w) - verified, not assumed
+      spacing_mm: [1.0, 1.0, 1.0]
+
+  brats2023_glioma:
+    adapter: brats
+    description: BraTS 2023 Adult Glioma (Synapse syn51156910) - requires registration + data-use agreement; NOT downloaded automatically
+    root: data/raw/BraTS2023_GLI/training
+    access: manual   # see docs/DATASETS.md
+    modality_suffix: {t1: t1n, t1ce: t1c, t2: t2w, flair: t2f}
+    seg_suffix: seg
+    label_map: {0: 0, 1: 1, 2: 2, 3: 3}      # 1 NCR, 2 ED, 3 ET  (BraTS 2023)
+    processed_dir: data/processed/brats2023_glioma
+    splits_dir: data/splits/brats2023_glioma
+    expected: {modalities: [flair, t1, t1ce, t2]}
+
+  brats2021:
+    adapter: brats
+    description: BraTS 2021 (RSNA-ASNR-MICCAI) - registration required; manual download only
+    root: data/raw/BraTS2021/training
+    access: manual
+    modality_suffix: {t1: t1, t1ce: t1ce, t2: t2, flair: flair}
+    seg_suffix: seg
+    label_map: {0: 0, 1: 1, 2: 2, 4: 3}      # 1 NCR, 2 ED, 4 ET  (BraTS 2021) -> contiguous
+    processed_dir: data/processed/brats2021
+    splits_dir: data/splits/brats2021
+    expected: {modalities: [flair, t1, t1ce, t2]}
+
+  brats_peds:
+    adapter: brats
+    description: BraTS pediatric (TCIA). Pediatric domain; NEVER mixed with adult data without an explicit domain-shift protocol.
+    access: manual
+    domain: pediatric

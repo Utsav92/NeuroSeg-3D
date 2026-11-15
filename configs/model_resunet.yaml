@@ -1,0 +1,32 @@
+# Architecture config. Compose with a hardware config:
+#   python scripts/train.py --config configs/model_resunet.yaml --hardware configs/train_mac.yaml
+experiment: resunet3d_msd
+seed: 42
+data:
+  dataset: msd_brain
+  modalities: [flair, t1, t1ce, t2]     # channel order used by the model (names resolved via processed meta.json)
+  patch_size: [64, 64, 64]
+  samples_per_epoch: 200
+  augmentation: full                     # none | basic | full
+  sampler_probs: {brain: 0.2, tumor: 0.5, boundary: 0.15, background: 0.15}
+model:
+  arch: resunet3d
+  out_channels: 4
+  base_channels: 16
+  depth: 4
+  norm: instance                         # instance | group
+  dropout: 0.1                           # enables MC-dropout uncertainty
+  down_mode: maxpool
+  up_mode: transpose
+loss:
+  components: {dice: 0.5, ce: 0.5}       # Loss = 0.5*SoftDice + 0.5*CE
+  include_background: false
+  ce_class_weights: false                # true -> weights from TRAIN split only
+optim: {name: adamw, lr: 0.0002, weight_decay: 0.00001}
+scheduler: {name: cosine, min_lr: 0.000001}
+train:
+  epochs: 100
+  val_interval: 2
+  val_max_cases: 20
+  val_overlap: 0.5
+  early_stopping: {enabled: true, patience: 10, min_delta: 0.0001}

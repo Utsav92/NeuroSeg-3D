@@ -1,0 +1,15 @@
+checkpoint: outputs/checkpoints/resunet3d_msd/best.pt   # required; no checkpoint -> clear error, never random output
+device: auto
+overlap: 0.5
+tta: false
+mc_dropout_samples: 0       # >0 needs a model trained with dropout > 0
+save_probabilities: false
+min_component_voxels: 0
+allow_resample: false
+api:
+  host: 127.0.0.1           # local only
+  port: 8000
+  max_upload_mb: 800
+  job_timeout_s: 1800
+  job_ttl_s: 3600
+  max_queue: 4

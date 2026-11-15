@@ -1,0 +1,12 @@
+# CUDA GPU (>=16 GB). Same research code; larger patches/batches + AMP.
+data: {patch_size: [96, 96, 96], samples_per_epoch: 400}
+model: {base_channels: 32}
+train:
+  device: cuda
+  batch_size: 2
+  grad_accum: 2
+  num_workers: 8
+  gradient_checkpointing: false
+  amp: true
+  sw_batch_size: 4
+  val_interval: 2
